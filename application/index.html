@@ -32,9 +32,17 @@
 					<input id="add-input">
 
 					<div id="add-options">
-						<div id="add-button" onclick="showAddBox(false)">Cancel</div>
+						<div id="add-button" onclick="showAddBox(false, 0)">Cancel</div>
 						<div id="add-button" onclick="addTopic()">Done</div>
 					</div>
+				</div>
+
+				<div id="confirm-save-box" style="display: none">
+					<div id="confirm-header">Note Saved</div>
+				</div>
+
+				<div id="confirm-delete-box" style="display: none">
+					<div id="confirm-header">Note Deleted</div>
 				</div>
 			</div>
 		</div>
@@ -54,16 +62,18 @@
 			// add
 			var topic_index = 0
 			var hidden_box = document.getElementById("hidden-box")
+			var add_box = document.getElementById("add-box")
+			var save_confirm_box = document.getElementById("confirm-save-box")
+			var delete_confirm_box = document.getElementById("confirm-delete-box")
 			var new_topic = document.getElementById("add-input")
 
-			var selected_topics = [''], topics = [{topic:"",show:false,typing:false,value:''}], blank
+			var selected_topics = [''], topics = [{ topic: "",show: false }], blank
 			var all_topics = []
 
 			function displayTopics() {
-				var mode_type, topic_type, topic_box = ""
+				var topic_type, topic_box = ""
 
-				topics.forEach(function ({ topic, show, typing, value }, index){
-					mode_type = typing ? 'Select' : 'Type'
+				topics.forEach(function ({ topic, show }, index){
 					topic_type = index > 0 ? "Sub topic #" + index : "Topic"
 
 					topic_box += "<div class='topic'>"
@@ -75,51 +85,33 @@
 					}
 
 					topic_box += "\t<h3 class='topic-index'>" + topic_type + ":</h3>"
+					topic_box += "\t<h3 class='topic-header' onclick='toggleTopicList(" + index + ")'><div>"
+					topic_box += topic ? topic : "Select " + topic_type
+					topic_box += "</div> <i class='fas fa-arrows-alt-v topic-toggle'></i></h3>"
+					topic_box += "</div>"
 
-					if (!typing) {
-						topic_box += "\t<h3 class='topic-header' onclick='toggleTopicList(" + index + ")'><div>"
+					if (all_topics.length > 0) {
+						topic_box += "<div class='topic-list-holder' style='display: "
+						topic_box += show ? "block;'>" : "none;'>"
+						topic_box += "\t<div class='topic-list'>"
 
-						if (value) {
-							topic_box += value
-						} else {
-							topic_box += "Select " + topic_type
-						}
+						all_topics.forEach(function (topic) {
+							if (selected_topics.indexOf(topic) > -1) {
+								topic_box += "\t<div class='list-topic-selected' onclick='selectTopic(\"" + topic + "\", " + index + ")'>" + topic + "</div>"
+							} else {
+								topic_box += "\t<div class='list-topic-unselect' onclick='selectTopic(\"" + topic + "\", " + index + ")'>" + topic + "</div>"
+							}
+						})
 
-						topic_box += "</div> <i class='fas fa-arrows-alt-v topic-toggle'></i></h3>"
-						topic_box += "</div>"
-						topic_box += "<div class='"
-						topic_box += all_topics.length > 0 ? "topic-list" : "topic-emptylist"
-						topic_box += "' style='display: "
-
-						if (show) {
-							topic_box += all_topics.length > 0 ? "block" : "flex"
-						} else {
-							topic_box += "none"
-						}
-
-						topic_box += ";'>"
-
-						if (all_topics.length > 0) {
-							all_topics.forEach(function (topic) {
-								if (selected_topics.indexOf(topic) > -1) {
-									topic_box += "\t<div class='list-topic-selected' onclick='selectTopic(\"" + topic + "\", " + index + ")'>" + topic + "</div>"
-								} else {
-									topic_box += "\t<div class='list-topic-unselect' onclick='selectTopic(\"" + topic + "\", " + index + ")'>" + topic + "</div>"
-								}
-							})
-						} else {
-							topic_box += "\t<div>"
-							topic_box += "\t\t<h3 id='no-results'>No Topic(s)</h3>"
-							topic_box += "\t\t<div id='add-topic' onclick='showAddBox(true)'>Add A Topic</div>"
-							topic_box += "\t</div>"
-						}
-
-						topic_box += "</div>"
+						topic_box += "\t</div>"
 					} else {
-						topic_box += "\t<input class='topic-input' onkeyup='recordTopic(" + index + ", this)' placeholder='Type a topic' value='" + topic + "'>"
-						topic_box += "</div>"
+						topic_box += "<div class='topic-emptylist' style='display: "
+						topic_box += show ? "flex;'>" : "none;'>"
+						topic_box += "\t<h3 id='no-results'>No Topic(s)</h3>"
 					}
 
+					topic_box += "\t<div id='add-topic' onclick='showAddBox(true, " + index + ")'>Add A Topic</div>"
+					topic_box += "</div>"
 					topic_box += "<div class='push-topic' onclick='pushOption(" + index + ")'>Add Subtopic</div>"
 				})
 
@@ -136,15 +128,19 @@
 			}
 
 			/* topic controls */
-			function showAddBox(toggle) {
+			function showAddBox(toggle, index) {
 				hidden_box.style.display = toggle ? "flex" : "none"
+				add_box.style.display = toggle ? "flex" : "none"
+
+				topic_index = toggle ? index : 0
 			}
 
 			function addTopic() {
-				topics[topic_index].value = new_topic.value
+				topics[topic_index].topic = new_topic.value
 				topics[topic_index].show = false
 				selected_topics[topic_index] = new_topic.value
 				hidden_box.style.display = "none"
+				add_box.style.display = "none"
 
 				displayTopics()
 				getNote()
@@ -169,7 +165,7 @@
 			}
 
 			function pushOption(index) {
-				topics.splice(index + 1, 0, {topic:"",show:false,typing:true,value:''})
+				topics.splice(index + 1, 0, { topic: "", show: false })
 
 				displayTopics()
 			}
@@ -202,7 +198,7 @@
 
 			/* topic input */
 			function selectTopic(topic, index) {
-				topics[index].value = topic
+				topics[index].topic = topic
 				topics[index].show = false;
 				selected_topics[index] = topic
 
@@ -216,8 +212,8 @@
 				var inputValue = document.getElementById("info").value
 				var info = { topics: [], note: "" }
 
-				topics.forEach(function ({ value }, index) {
-					if (!value) {
+				topics.forEach(function ({ topic }, index) {
+					if (!topic) {
 						if (index < topics.length - 1) {
 							blank = true
 
@@ -251,10 +247,18 @@
 					.then((response) => {
 						if (response == 'succeed') {
 							delete_button.style.display = "block"
+
+							hidden_box.style.display = "flex"
+							save_confirm_box.style.display = "flex"
+
+							setTimeout(function () {
+								hidden_box.style.display = "none"
+								save_confirm_box.style.display = "none"
+							}, 2000)
 						}
 					})
 					.catch((error) => {
-
+						alert(error.message)
 					})
 				}
 			}
@@ -265,6 +269,9 @@
 
 				params.append('topics', JSON.stringify(selected_topics))
 
+				hidden_box.style.display = "flex"
+				delete_confirm_box.style.display = "flex"
+			
 				options = {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -277,6 +284,11 @@
 
 					if (json == 'succeed') {
 						delete_button.style.display = "none"
+
+						setTimeout(function () {
+							hidden_box.style.display = "none"
+							delete_confirm_box.style.display = "none"
+						}, 2000)
 					}
 				} catch(e) {
 

@@ -79,7 +79,7 @@
 	margin-top: 1px;
 }
 
-.topic-list {
+.topic-list-holder {
 	overflow-y: scroll;
 }
 
@@ -89,13 +89,17 @@
 	justify-content: space-around;
 }
 
-.topic-list,
+.topic-list-holder,
 .topic-emptylist {
 	border-radius: 3px;
 	border-style: solid;
 	border-width: 1px;
 	height: 200px;
 	width: 320px;
+}
+
+.topic-list {
+	height: 170px;
 }
 
 [class^="list-topic-"] {
@@ -179,8 +183,8 @@
 
 #info {
 	border-width: 0px;
-	font-size: 15px;
-	min-height: 180px;
+	font-size: 10px;
+	min-height: 300px;
 	outline: none;
 	padding: 5px;
 	resize: none;
@@ -288,4 +292,26 @@
 	cursor: pointer;
 }
 /* end add box */
+
+/* confirm box */
+#confirm-save-box,
+#confirm-delete-box {
+	background-color: white;
+	border-radius: 3px;
+	border-style: solid;
+	display: flex;
+	flex-direction: column;
+	height: 300px;
+	justify-content: space-around;
+	margin: 0 auto;
+	width: 300px;
+}
+
+#confirm-header {
+	font-family: arial;
+	font-size: 20px;
+	font-weight: bold;
+	text-align: center;
+}
+/* end confirm box */
 /* end hidden box */
