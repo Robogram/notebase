@@ -7,11 +7,11 @@ A desktop application that let users store notes and have them properly indexed 
 	
 # Installation of requirements
 - ElectronJS:
-	'npm i -D electron@latest'
+  - npm i -D electron@latest
 
 - Rust:
-	'curl https://sh.rustup.rs -sSf | sh'
-	'source $HOME/.cargo/env'
+  - curl https://sh.rustup.rs -sSf | sh
+  - source $HOME/.cargo/env
 	
 (I assume you can figure out the rest ?......)
 	
