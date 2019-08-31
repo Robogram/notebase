@@ -6,8 +6,8 @@ A desktop application that let users store notes and have them properly indexed 
 - Rust (nightly version)
 
 # Installation of requirements
-ElectronJS: npm i -D electron@latest
-Rust: curl https://sh.rustup.rs -sSf | sh
+- ElectronJS: npm i -D electron@latest
+- Rust: curl https://sh.rustup.rs -sSf | sh
 
 (I assume you can figure out the rest ?......)
 
