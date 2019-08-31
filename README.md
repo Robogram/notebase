@@ -14,6 +14,7 @@ A desktop application that let users store notes and have them properly indexed 
   - curl https://sh.rustup.rs -sSf | sh
   - source $HOME/.cargo/env
   - rustup toolchain install nightly
+  - rustup default nightly
   - 'cargo run' inside project folder
 	
 (I assume you can figure out the rest ?......)
