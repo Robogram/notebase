@@ -35,28 +35,6 @@ struct NewNote {
 	note: String
 }
 
-/*
-#[post("/note", format = "application/x-www-form-urlencoded", data = "<note>")]
-fn note(note: Form<Note>) -> String {
-	format!("The info is {:#?}", note.infos)
-}
-
-#[get("/file")]
-fn file() -> String {
-	let note_file = "src/notes.json";
-	let file = fs::read_to_string(note_file).unwrap();
-	let mut notes: Note = serde_json::from_str(&file).unwrap();
-
-	let new_topic = Topic { topics: [].to_vec(), notes: [].to_vec() };
-	notes.infos.push(new_topic);
-
-	let serialized = serde_json::to_string(&notes).unwrap();
-	fs::write(note_file, serialized);
-
-	format!("{:?}", notes)
-}
-*/
-
 #[get("/")]
 fn index() -> String {
 	format!("Hello, {}", "World")
@@ -70,7 +48,7 @@ fn get_all_topics() -> String {
 	let file_topics = infos.topics;
 	let mut all_topics: Vec<String> = [].to_vec();
 	let mut each_topics: Vec<String>;
-	let mut valid_append: bool = false;
+	let mut valid_append;
 
 	for file_topic in file_topics.iter() {
 		each_topics = serde_json::from_str(&file_topic).unwrap();
@@ -79,12 +57,12 @@ fn get_all_topics() -> String {
 			valid_append = true;
 
 			for topic in all_topics.iter() {
-				if (*topic == each_topic) {
+				if *topic == each_topic {
 					valid_append = false;
 				}
 			}
 
-			if (valid_append == true) {
+			if valid_append == true {
 				all_topics.push(each_topic);
 			}
 		}
@@ -98,17 +76,15 @@ fn get_note(request: Form<FormTopics>) -> String {
 	// get notes from file
 	let note_file = "src/notes.json";
 	let file = fs::read_to_string(note_file).unwrap();
-	let mut infos: Note = serde_json::from_str(&file).unwrap();
+	let infos: Note = serde_json::from_str(&file).unwrap();
 	let mut note: String = "".to_string();
-	let mut topic_index: usize = 0;
 
 	// get topics from form
 	let topics: String = request.topics.to_string();
 
 	for (k, topic) in infos.topics.iter().enumerate() {
-		if (*topic == topics) {
+		if *topic == topics {
 			note = infos.notes[k].to_string();
-			topic_index = k
 		}
 	}
 
@@ -129,12 +105,12 @@ fn save_info(request: Form<FormInfo>) -> String {
 	let mut topic_index: usize = 0;
 
 	for (k, topic) in infos.topics.iter().enumerate() {
-		if (*topic == topics) {
+		if *topic == topics {
 			topic_index = k + 1;
 		}
 	}
 
-	if (topic_index > 0) {
+	if topic_index > 0 {
 		infos.notes[topic_index - 1] = note;
 	} else {
 		infos.topics.push(topics);
@@ -142,7 +118,7 @@ fn save_info(request: Form<FormInfo>) -> String {
 	}
 
 	let serialized = serde_json::to_string(&infos).unwrap();
-	fs::write(note_file, serialized);
+	fs::write(note_file, serialized).expect("could not write to file");
 
 	format!("{:?}", "succeed")
 }
@@ -159,7 +135,7 @@ fn delete_info(request: Form<FormTopics>) -> String {
 	let topics: String = request.topics.to_string();
 
 	for (k, topic) in infos.topics.iter().enumerate() {
-		if (*topic == topics) {
+		if *topic == topics {
 			topic_index = k;
 		}
 	}
@@ -169,7 +145,7 @@ fn delete_info(request: Form<FormTopics>) -> String {
 
 	let serialized = serde_json::to_string(&infos).unwrap();
 
-	fs::write(note_file, serialized);
+	fs::write(note_file, serialized).expect("could not write to file");
 
 	format!("{:?}", "succeed")
 }

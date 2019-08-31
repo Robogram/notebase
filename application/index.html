@@ -188,6 +188,10 @@
 				.then((response) => {
 					info.value = response ? response : ''
 
+					while (info.value.replace("\"\"", "") != info.value) {
+						info.value = info.value.replace("\"\"", "'")
+					}
+
 					delete_button.style.display = response ? "block" : "none"
 				})
 				.catch((error) => {
@@ -231,6 +235,10 @@
 
 					info.topics = JSON.stringify(selected_topics)
 					info.note = inputValue
+
+					while (info.note.replace("'", "") != info.note) {
+						info.note = info.note.replace("'", "\"\"")
+					}
 
 					params.append('note', JSON.stringify(info))
 
