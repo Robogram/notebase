@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>NoteBase</title>
+		<link href="https://fonts.googleapis.com/css?family=Lobster&display=swap" rel="stylesheet">
+		<script src="https://kit.fontawesome.com/7aeeb0532f.js"></script>
+		<link rel="stylesheet" type="text/css" href="index.css">
+	</head>
+	<body>
+		<script type="text/javascript">
+			
+		</script>
+		<div id="main">
+			<div id="topics"></div>
+
+			<div id="topics-input">
+				<textarea id="info" placeholder="Type note here" onkeyup="javascript:errormsg.innerHTML = ''"></textarea>
+				<div id="user-options">
+					<div id="user-options-save" onclick="saveInfo()">Save</div>
+					<div id="user-options-delete" style="display: none;" onclick="deleteInfo()">Delete</div>
+				</div>
+			</div>
+
+			<div id="errormsg"></div>
+
+			<div id="license-header">2019 @ Geottuse, Inc</div>
+
+			<div id="hidden-box" style="display: none;">
+				<div id="add-box">
+					<h3 id="add-header">Enter a topic for your note:</h3>
+
+					<input id="add-input">
+
+					<div id="add-options">
+						<div id="add-button" onclick="showAddBox(false)">Cancel</div>
+						<div id="add-button" onclick="addTopic()">Done</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			// all topics
+			var all_topics_url = 'http://localhost:8000/get_all_topics'
+
+			// elements
+			var errormsg = document.getElementById("errormsg")
+			var topics_box = document.getElementById("topics")
+			var topics_input = document.getElementById("topics-input")
+			var info = document.getElementById("info")
+			var save_button = document.getElementById("user-options-save")
+			var delete_button = document.getElementById("user-options-delete")
+
+			// hidden box
+			// add
+			var topic_index = 0
+			var hidden_box = document.getElementById("hidden-box")
+			var new_topic = document.getElementById("add-input")
+
+			var selected_topics = [''], topics = [{topic:"",show:false,typing:false,value:''}], blank
+			var all_topics = []
+
+			function displayTopics() {
+				var mode_type, topic_type, topic_box = ""
+
+				topics.forEach(function ({ topic, show, typing, value }, index){
+					mode_type = typing ? 'Select' : 'Type'
+					topic_type = index > 0 ? "Sub topic #" + index : "Topic"
+
+					topic_box += "<div class='topic'>"
+
+					if (index == 0) {
+						topic_box += "\t<div class='delete-topic-disabled'></div>"
+					} else {
+						topic_box += "\t<div class='delete-topic' onclick='removeTopic(" + index + ")'><i class='fas fa-times'></i></div>"
+					}
+
+					topic_box += "\t<h3 class='topic-index'>" + topic_type + ":</h3>"
+
+					if (!typing) {
+						topic_box += "\t<h3 class='topic-header' onclick='toggleTopicList(" + index + ")'><div>"
+
+						if (value) {
+							topic_box += value
+						} else {
+							topic_box += "Select " + topic_type
+						}
+
+						topic_box += "</div> <i class='fas fa-arrows-alt-v topic-toggle'></i></h3>"
+						topic_box += "</div>"
+						topic_box += "<div class='"
+						topic_box += all_topics.length > 0 ? "topic-list" : "topic-emptylist"
+						topic_box += "' style='display: "
+
+						if (show) {
+							topic_box += all_topics.length > 0 ? "block" : "flex"
+						} else {
+							topic_box += "none"
+						}
+
+						topic_box += ";'>"
+
+						if (all_topics.length > 0) {
+							all_topics.forEach(function (topic) {
+								if (selected_topics.indexOf(topic) > -1) {
+									topic_box += "\t<div class='list-topic-selected' onclick='selectTopic(\"" + topic + "\", " + index + ")'>" + topic + "</div>"
+								} else {
+									topic_box += "\t<div class='list-topic-unselect' onclick='selectTopic(\"" + topic + "\", " + index + ")'>" + topic + "</div>"
+								}
+							})
+						} else {
+							topic_box += "\t<div>"
+							topic_box += "\t\t<h3 id='no-results'>No Topic(s)</h3>"
+							topic_box += "\t\t<div id='add-topic' onclick='showAddBox(true)'>Add A Topic</div>"
+							topic_box += "\t</div>"
+						}
+
+						topic_box += "</div>"
+					} else {
+						topic_box += "\t<input class='topic-input' onkeyup='recordTopic(" + index + ", this)' placeholder='Type a topic' value='" + topic + "'>"
+						topic_box += "</div>"
+					}
+
+					topic_box += "<div class='push-topic' onclick='pushOption(" + index + ")'>Add Subtopic</div>"
+				})
+
+				topics_box.innerHTML = topic_box
+				topics_input.style.display = topics.length > 0 ? "block" : "none"
+				errormsg.innerHTML = ""
+			}
+
+			async function getAllTopics() {
+				var response = await fetch('http://localhost:8000/get_all_topics')
+				var json = await response.json()
+
+				all_topics = json
+			}
+
+			/* topic controls */
+			function showAddBox(toggle) {
+				hidden_box.style.display = toggle ? "flex" : "none"
+			}
+
+			function addTopic() {
+				topics[topic_index].value = new_topic.value
+				topics[topic_index].show = false
+				selected_topics[topic_index] = new_topic.value
+				hidden_box.style.display = "none"
+
+				displayTopics()
+				getNote()
+			}
+
+			function removeTopic(index) {
+				topics.splice(index, 1)
+				selected_topics.splice(index, 1)
+
+				displayTopics()
+				getNote()
+			}
+
+			function toggleTopicList(index) {
+				var topic = topics[index]
+
+				topic.show = !topic.show
+
+				topics[index] = topic
+
+				displayTopics()
+			}
+
+			function pushOption(index) {
+				topics.splice(index + 1, 0, {topic:"",show:false,typing:true,value:''})
+
+				displayTopics()
+			}
+
+			function getNote() {
+				var params = new URLSearchParams()
+
+				params.append('topics', JSON.stringify(selected_topics))
+
+				fetch('http://localhost:8000/get_note', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: params
+				})
+				.then((response) => response.json())
+				.then((response) => {
+					info.value = response ? response : ''
+
+					delete_button.style.display = response ? "block" : "none"
+				})
+				.catch((error) => {
+
+				})
+			}
+			/* end topic controls */
+
+			/* topic input */
+			function selectTopic(topic, index) {
+				topics[index].value = topic
+				topics[index].show = false;
+				selected_topics[index] = topic
+
+				displayTopics()
+				getNote()
+			}
+			/* end topic input */
+
+			function saveInfo() {
+				var params = new URLSearchParams(), blank = false
+				var inputValue = document.getElementById("info").value
+				var info = { topics: [], note: "" }
+
+				topics.forEach(function ({ value }, index) {
+					if (!value) {
+						if (index < topics.length - 1) {
+							blank = true
+
+							errormsg.innerHTML = "Blank Detected"
+						}
+					}
+				})
+
+				if (!inputValue) {
+					errormsg.innerHTML = "Write something"
+				}
+
+				if (!blank && inputValue) {
+					errormsg.innerHTML = ""
+
+					info.topics = JSON.stringify(selected_topics)
+					info.note = inputValue
+
+					params.append('note', JSON.stringify(info))
+
+					fetch('http://localhost:8000/save_info', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+						body: params
+					})
+					.then((response) => response.json())
+					.then((response) => {
+						if (response == 'succeed') {
+							delete_button.style.display = "block"
+						}
+					})
+					.catch((error) => {
+
+					})
+				}
+			}
+
+			async function deleteInfo() {
+				var params = new URLSearchParams()
+				var options, response, json
+
+				params.append('topics', JSON.stringify(selected_topics))
+
+				options = {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: params
+				}
+
+				try {
+					response = await fetch('http://localhost:8000/delete_info', options)
+					json = await response.json()
+
+					if (json == 'succeed') {
+						delete_button.style.display = "none"
+					}
+				} catch(e) {
+
+				}
+			}
+
+			displayTopics()
+			getAllTopics()
+		</script>
+	</body>
+</html>

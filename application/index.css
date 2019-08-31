@@ -1,0 +1,291 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+
+#main {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+/* topics */
+#topics {
+	max-height: 300px;
+	margin: 10px;
+	padding-bottom: 10px;
+	overflow-y: scroll;
+	width: 430px;
+}
+
+.topic {
+	display: flex;
+	font-family: arial;
+	flex-direction: row;
+	justify-content: space-between;
+	margin: 10px 0;
+	width: 320px;
+}
+
+[class^="delete-topic"] {
+	height: 15px;
+	width: 15px;
+}
+
+.delete-topic {
+	background-color: black;
+	border-radius: 12px;
+	color: white;
+	font-size: 13px;
+	margin-bottom: -5px;
+	padding: 5px;
+	text-align: center;
+}
+
+.delete-topic:hover {
+	background-color: rgba(0, 0, 0, 0.5);
+	cursor: pointer;
+}
+
+.topic-index {
+	font-size: 13px;
+	margin-top: 5px;
+}
+
+/* select */
+.topic-header {
+	border-radius: 3px;
+	border-style: solid;
+	border-width: 1px;
+	display: flex;
+	flex-direction: row;
+	font-family: arial;
+	font-size: 13px;
+	height: 15px;
+	justify-content: space-around;
+	padding: 5px 10px;
+	text-align: center;
+	width: 150px;
+}
+
+.topic-header:hover,
+.list-topic-unselect:hover {
+	background-color: rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+}
+
+.topic-toggle {
+	margin-top: 1px;
+}
+
+.topic-list {
+	overflow-y: scroll;
+}
+
+.topic-emptylist {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+}
+
+.topic-list,
+.topic-emptylist {
+	border-radius: 3px;
+	border-style: solid;
+	border-width: 1px;
+	height: 200px;
+	width: 320px;
+}
+
+[class^="list-topic-"] {
+	font-family: arial;
+	font-size: 13px;
+	border-style: solid;
+	border-width: 0.5px;
+	margin: 2px;
+	padding: 3px;
+	text-align: center;
+}
+
+.list-topic-selected {
+	background-color: rgba(0, 0, 0, 0.7);
+	color: white;
+}
+/* end select */
+
+/* input */
+.topic-input {
+	border-radius: 2px;
+	border-style: solid;
+	border-width: 1px;
+	font-size: 13px;
+	height: 15px;
+	margin-top: 0px;
+	outline: none;
+	padding: 5px 10px;
+	width: 150px;
+}
+/* end input */
+
+#no-results {
+	font-family: arial;
+	font-size: 15px;
+	margin: 2px auto;
+	text-align: center;
+}
+
+#add-topic {
+	border-radius: 3px;
+	border-style: solid;
+	border-width: 0.5px;
+	font-family: arial;
+	margin: 2px auto;
+	padding: 2px;
+	text-align: center;
+	width: 100px;
+}
+
+#add-topic:hover {
+	background-color: rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+}
+
+.push-topic {
+	border-radius: 3px;
+	border-style: solid;
+	border-width: 1px;
+	font-family: arial;
+	font-size: 13px;
+	height: 15px;
+	margin: 5px auto;
+	padding: 2px 5px;
+	text-align: center;
+	width: 100px;
+}
+
+.push-topic:hover {
+	background-color: rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+}
+/* end topics */
+
+#topics-input {
+	border-radius: 3px;
+	border-style: solid;
+	border-width: 2px;
+	margin: 0 10px;
+}
+
+#info {
+	border-width: 0px;
+	font-size: 15px;
+	min-height: 180px;
+	outline: none;
+	padding: 5px;
+	resize: none;
+	width: calc(100vw - 34px);
+}
+
+#user-options {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	margin: 5px;
+	width: 230px;
+}
+
+#user-options div {
+	border-radius: 3px;
+	border-style: solid;
+	font-family: arial;
+	padding: 3px;
+	text-align: center;
+	width: 100px;
+}
+
+#user-options div:hover {
+	background-color: rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+}
+
+#errormsg {
+	color: red;
+	font-family: arial;
+	margin: 10px;
+}
+
+#license-header {
+	color: grey;
+	bottom: 0;
+	font-family: arial;
+	margin: 20px;
+	position: absolute;
+	text-align: center;
+	width: 100vw;
+}
+
+/* hidden box */
+#hidden-box {
+	background-color: rgba(0, 0, 0, 0.7);
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	justify-content: space-around;
+	position: absolute;
+	top: 0;
+	width: 100vw;
+}
+
+/* add box */
+#add-box {
+	background-color: white;
+	border-radius: 3px;
+	border-style: solid;
+	display: flex;
+	flex-direction: column;
+	height: 300px;
+	justify-content: space-around;
+	margin: 0 auto;
+	width: 400px;
+}
+
+#add-header {
+	font-family: arial;
+	text-align: center;
+}
+
+#add-input {
+	border-radius: 3px;
+	border-style: solid;
+	font-size: 20px;
+	margin: 0 auto;
+	outline: none;
+	padding: 5px;
+	width: 300px;
+}
+
+#add-options {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	margin: 0 auto;
+	width: 300px;
+}
+
+#add-button {
+	border-radius: 3px;
+	border-style: solid;
+	font-family: arial;
+	margin: 0 auto;
+	padding: 10px;
+	text-align: center;
+	width: 100px;
+}
+
+#add-button:hover {
+	background-color: rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+}
+/* end add box */
+/* end hidden box */
