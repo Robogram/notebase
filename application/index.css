@@ -25,12 +25,7 @@
 	flex-direction: row;
 	justify-content: space-between;
 	margin: 10px 0;
-	width: 320px;
-}
-
-[class^="delete-topic"] {
-	height: 15px;
-	width: 15px;
+	width: 350px;
 }
 
 .delete-topic {
@@ -38,9 +33,11 @@
 	border-radius: 12px;
 	color: white;
 	font-size: 13px;
+	height: 15px;
 	margin-bottom: -5px;
 	padding: 5px;
 	text-align: center;
+	width: 15px;
 }
 
 .delete-topic:hover {
@@ -66,7 +63,7 @@
 	justify-content: space-around;
 	padding: 5px 10px;
 	text-align: center;
-	width: 150px;
+	width: 200px;
 }
 
 .topic-header:hover,
@@ -77,10 +74,6 @@
 
 .topic-toggle {
 	margin-top: 1px;
-}
-
-.topic-list-holder {
-	overflow-y: scroll;
 }
 
 .topic-emptylist {
@@ -95,11 +88,12 @@
 	border-style: solid;
 	border-width: 1px;
 	height: 200px;
-	width: 320px;
+	width: 350px;
 }
 
 .topic-list {
 	height: 170px;
+	overflow-y: scroll;
 }
 
 [class^="list-topic-"] {
@@ -183,7 +177,8 @@
 
 #info {
 	border-width: 0px;
-	font-size: 10px;
+	font-size: 15px;
+	font-weight: bold;
 	min-height: 300px;
 	outline: none;
 	padding: 5px;

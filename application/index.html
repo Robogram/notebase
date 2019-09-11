@@ -48,7 +48,8 @@
 		</div>
 		<script type="text/javascript">
 			// all topics
-			var all_topics_url = 'http://localhost:8000/get_all_topics'
+			var test = true
+			var url = test ? 'http://localhost:8000/' : 'https://notebase.geottuse.com/'
 
 			// elements
 			var errormsg = document.getElementById("errormsg")
@@ -67,7 +68,7 @@
 			var delete_confirm_box = document.getElementById("confirm-delete-box")
 			var new_topic = document.getElementById("add-input")
 
-			var selected_topics = [''], topics = [{ topic: "",show: false }], blank
+			var selected_topics = [], topics = [], blank
 			var all_topics = []
 
 			function displayTopics() {
@@ -77,13 +78,7 @@
 					topic_type = index > 0 ? "Sub topic #" + index : "Topic"
 
 					topic_box += "<div class='topic'>"
-
-					if (index == 0) {
-						topic_box += "\t<div class='delete-topic-disabled'></div>"
-					} else {
-						topic_box += "\t<div class='delete-topic' onclick='removeTopic(" + index + ")'><i class='fas fa-times'></i></div>"
-					}
-
+					topic_box += "\t<div class='delete-topic' onclick='removeTopic(" + index + ")'><i class='fas fa-times'></i></div>"
 					topic_box += "\t<h3 class='topic-index'>" + topic_type + ":</h3>"
 					topic_box += "\t<h3 class='topic-header' onclick='toggleTopicList(" + index + ")'><div>"
 					topic_box += topic ? topic : "Select " + topic_type
@@ -115,13 +110,16 @@
 					topic_box += "<div class='push-topic' onclick='pushOption(" + index + ")'>Add Subtopic</div>"
 				})
 
+				if (topics.length == 0) {
+					topic_box += "<div id='add-topic' onclick='addFirstTopic()'>Add A Topic</div>"
+				}
+
 				topics_box.innerHTML = topic_box
-				topics_input.style.display = topics.length > 0 ? "block" : "none"
 				errormsg.innerHTML = ""
 			}
 
 			async function getAllTopics() {
-				var response = await fetch('http://localhost:8000/get_all_topics')
+				var response = await fetch(url + 'get_all_topics')
 				var json = await response.json()
 
 				all_topics = json
@@ -133,6 +131,13 @@
 				add_box.style.display = toggle ? "flex" : "none"
 
 				topic_index = toggle ? index : 0
+			}
+
+			function addFirstTopic() {
+				topics.push({ topic: '', show: false })
+				selected_topics.push('')
+
+				displayTopics()
 			}
 
 			function addTopic() {
@@ -175,7 +180,7 @@
 
 				params.append('topics', JSON.stringify(selected_topics))
 
-				fetch('http://localhost:8000/get_note', {
+				fetch(url + 'get_note', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 					body: params
@@ -229,8 +234,10 @@
 				if (!blank && inputValue) {
 					errormsg.innerHTML = ""
 
+					all_topics = all_topics.concat(selected_topics)
 					info.topics = JSON.stringify(selected_topics)
 					info.note = inputValue
+					new_topic.value = ""
 
 					while (info.note.replace("'", "") != info.note) {
 						info.note = info.note.replace("'", "\"\"")
@@ -238,7 +245,7 @@
 
 					params.append('note', JSON.stringify(info))
 
-					fetch('http://localhost:8000/save_info', {
+					fetch(url + 'save_info', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 						body: params
@@ -254,11 +261,11 @@
 							setTimeout(function () {
 								hidden_box.style.display = "none"
 								save_confirm_box.style.display = "none"
-							}, 2000)
+							}, 1000)
 						}
 					})
 					.catch((error) => {
-						alert(error.message)
+
 					})
 				}
 			}
@@ -279,7 +286,7 @@
 				}
 
 				try {
-					response = await fetch('http://localhost:8000/delete_info', options)
+					response = await fetch(url + 'delete_info', options)
 					json = await response.json()
 
 					if (json == 'succeed') {
@@ -288,7 +295,7 @@
 						setTimeout(function () {
 							hidden_box.style.display = "none"
 							delete_confirm_box.style.display = "none"
-						}, 2000)
+						}, 1000)
 					}
 				} catch(e) {
 
