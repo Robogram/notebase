@@ -19,8 +19,10 @@
   "author": "Geottuse",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^6.0.4",
+    "electron": "^8.2.5",
     "electron-builder": "^21.2.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "fs": "0.0.1-security"
+  }
 }

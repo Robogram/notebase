@@ -7,9 +7,6 @@
 		<link rel="stylesheet" type="text/css" href="index.css">
 	</head>
 	<body>
-		<script type="text/javascript">
-			
-		</script>
 		<div id="main">
 			<div id="topics"></div>
 
@@ -26,7 +23,7 @@
 			<div id="license-header">2019 @ Geottuse, Inc</div>
 
 			<div id="hidden-box" style="display: none;">
-				<div id="add-box">
+				<div id="add-box" style="display: none">
 					<h3 id="add-header">Enter a topic for your note:</h3>
 
 					<input id="add-input">
@@ -48,9 +45,8 @@
 		</div>
 		<script type="text/javascript">
 			// all topics
-			var test = true
-			var url = test ? 'http://localhost:8000/' : 'https://notebase.geottuse.com/'
-
+			var fs = require('fs'), note_file = "/Users/geottuse/Desktop/Dropbox/building/notebase/notes.json"
+			
 			// elements
 			var errormsg = document.getElementById("errormsg")
 			var topics_box = document.getElementById("topics")
@@ -119,10 +115,30 @@
 			}
 
 			async function getAllTopics() {
-				var response = await fetch(url + 'get_all_topics')
-				var json = await response.json()
+				var file = await fs.readFileSync(note_file)
+				var infos = JSON.parse(file)
+				var topics = infos.topics
+				var each_topics, valid_append
 
-				all_topics = json
+				all_topics = []
+
+				topics.forEach(function (topic) {
+					each_topics = JSON.parse(topic)
+
+					each_topics.forEach(function (each_topic) {
+						valid_append = true
+
+						all_topics.forEach(function (topic) {
+							if (topic == each_topic) {
+								valid_append = false
+							}
+						})
+
+						if (valid_append) {
+							all_topics.push(each_topic)
+						}
+					})
+				})
 			}
 
 			/* topic controls */
@@ -175,29 +191,24 @@
 				displayTopics()
 			}
 
-			function getNote() {
-				var params = new URLSearchParams()
+			async function getNote() {
+				var file = await fs.readFileSync(note_file)
+				var infos = JSON.parse(file)
+				var note = "", topics = JSON.stringify(selected_topics)
 
-				params.append('topics', JSON.stringify(selected_topics))
-
-				fetch(url + 'get_note', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-					body: params
-				})
-				.then((response) => response.json())
-				.then((response) => {
-					info.value = response ? response : ''
-
-					while (info.value.replace("\"\"", "") != info.value) {
-						info.value = info.value.replace("\"\"", "'")
+				infos.topics.forEach(function (topic, index) {
+					if (topic == topics) {
+						note = infos.notes[index]
 					}
-
-					delete_button.style.display = response ? "block" : "none"
 				})
-				.catch((error) => {
 
-				})
+				info.value = note
+
+				while (info.value.replace("\"\"", "") != info.value) {
+					info.value = info.value.replace("\"\"", "'")
+				}
+
+				delete_button.style.display = response ? "block" : "none"
 			}
 			/* end topic controls */
 
@@ -212,8 +223,8 @@
 			}
 			/* end topic input */
 
-			function saveInfo() {
-				var params = new URLSearchParams(), blank = false
+			async function saveInfo() {
+				var blank = false
 				var inputValue = document.getElementById("info").value
 				var info = { topics: [], note: "" }
 
@@ -243,63 +254,75 @@
 						info.note = info.note.replace("'", "\"\"")
 					}
 
-					params.append('note', JSON.stringify(info))
+					var file = await fs.readFileSync(note_file)
+					var infos = JSON.parse(file)
 
-					fetch(url + 'save_info', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-						body: params
-					})
-					.then((response) => response.json())
-					.then((response) => {
-						if (response == 'succeed') {
-							delete_button.style.display = "block"
+					// get new note from form
+					var note_info = info
 
-							hidden_box.style.display = "flex"
-							save_confirm_box.style.display = "flex"
+					topics = note_info.topics
+					var note = note_info.note
+					var topic_index = 0
 
-							setTimeout(function () {
-								hidden_box.style.display = "none"
-								save_confirm_box.style.display = "none"
-							}, 1000)
+					infos.topics.forEach(function (topic, index) {
+						if (topic == topics) {
+							topic_index = index + 1
 						}
 					})
-					.catch((error) => {
 
-					})
+					if (topic_index > 0) {
+						infos.notes[topic_index - 1] = note
+					} else {
+						infos.topics.push(topics)
+						infos.notes.push(note)
+					}
+
+					infos = JSON.stringify(infos)
+
+					await fs.writeFileSync(note_file, infos)
+
+					delete_button.style.display = "block"
+
+					hidden_box.style.display = "flex"
+					save_confirm_box.style.display = "flex"
+
+					setTimeout(function () {
+						hidden_box.style.display = "none"
+						save_confirm_box.style.display = "none"
+					}, 1000)
 				}
 			}
 
 			async function deleteInfo() {
-				var params = new URLSearchParams()
-				var options, response, json
-
-				params.append('topics', JSON.stringify(selected_topics))
-
 				hidden_box.style.display = "flex"
 				delete_confirm_box.style.display = "flex"
-			
-				options = {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-					body: params
-				}
 
-				try {
-					response = await fetch(url + 'delete_info', options)
-					json = await response.json()
+				var file = await fs.readFileSync(note_file)
+				var infos = JSON.parse(file)
+				var topic_index = 0
 
-					if (json == 'succeed') {
-						delete_button.style.display = "none"
+				// get note from form for deletion
+				var topics = JSON.stringify(selected_topics)
 
-						setTimeout(function () {
-							hidden_box.style.display = "none"
-							delete_confirm_box.style.display = "none"
-						}, 1000)
+				infos.topics.forEach(function (topic, index) {
+					if (topic == topics) {
+						topic_index = index
 					}
-				} catch(e) {
+				})
 
-				}
+				infos.topics.splice(topic_index, 1)
+				infos.notes.splice(topic_index, 1)
+
+				infos = JSON.stringify(infos)
+
+				await fs.writeFileSync(note_file, infos)
+
+				delete_button.style.display = "none"
+
+				setTimeout(function () {
+					hidden_box.style.display = "none"
+					delete_confirm_box.style.display = "none"
+				}, 1000)
 			}
 
 			displayTopics()
