@@ -11,6 +11,7 @@
 			<div id="topics"></div>
 
 			<div id="topics-input">
+				<div id="topic-header"></div>
 				<textarea id="info" placeholder="Type note here" onkeyup="javascript:errormsg.innerHTML = ''"></textarea>
 				<div id="user-options">
 					<div id="user-options-save" onclick="saveInfo()">Save</div>
@@ -20,7 +21,7 @@
 
 			<div id="errormsg"></div>
 
-			<div id="license-header">2019 @ Geottuse, Inc</div>
+			<div id="license-header">2021 @ Geottuse, Inc</div>
 
 			<div id="hidden-box" style="display: none;">
 				<div id="add-box" style="display: none">
@@ -45,13 +46,14 @@
 		</div>
 		<script type="text/javascript">
 			// all topics
-			var fs = require('fs'), note_file = "/Users/geottuse/Desktop/Dropbox/building/notebase/notes.json"
+			var fs = require('fs'), note_file = "/Users/geottuse/Desktop/Dropbox/others/github-repos/done/notebase/notes.json"
 			
 			// elements
 			var errormsg = document.getElementById("errormsg")
 			var topics_box = document.getElementById("topics")
 			var topics_input = document.getElementById("topics-input")
 			var info = document.getElementById("info")
+			var header = document.getElementById("topic-header")
 			var save_button = document.getElementById("user-options-save")
 			var delete_button = document.getElementById("user-options-delete")
 
@@ -64,81 +66,94 @@
 			var delete_confirm_box = document.getElementById("confirm-delete-box")
 			var new_topic = document.getElementById("add-input")
 
-			var selected_topics = [], topics = [], blank
-			var all_topics = []
+			var selected_topics = [], topics_list = []
 
-			function displayTopics() {
-				var topic_type, topic_box = ""
+			async function displayTopics(index) {
+				var file = await fs.readFileSync(note_file), infos = JSON.parse(file)
+				var topic_box = "", displayed_topics = []
 
-				topics.forEach(function ({ topic, show }, index){
-					topic_type = index > 0 ? "Sub topic #" + index : "Topic"
-
+				topics_list.forEach(function ({ topic, show }, list_index){
 					topic_box += "<div class='topic'>"
-					topic_box += "\t<div class='delete-topic' onclick='removeTopic(" + index + ")'><i class='fas fa-times'></i></div>"
-					topic_box += "\t<h3 class='topic-index'>" + topic_type + ":</h3>"
-					topic_box += "\t<h3 class='topic-header' onclick='toggleTopicList(" + index + ")'><div>"
-					topic_box += topic ? topic : "Select " + topic_type
-					topic_box += "</div> <i class='fas fa-arrows-alt-v topic-toggle'></i></h3>"
-					topic_box += "</div>"
 
-					if (all_topics.length > 0) {
-						topic_box += "<div class='topic-list-holder' style='display: "
-						topic_box += show ? "block;'>" : "none;'>"
-						topic_box += "\t<div class='topic-list'>"
+					// delete topic
+					topic_box += "\t<div class='delete-topic"
+					topic_box += list_index == topics_list.length - 1 ? "" : "-disabled"
+					topic_box += "'"
+					topic_box += list_index == topics_list.length - 1 ? " onclick='removeTopic(" + list_index + ")'" : ""
+					topic_box += ">"
+					topic_box += "\t\t<i class='fas fa-times'></i>"
+					topic_box += "\t</div>"
 
-						all_topics.forEach(function (topic) {
-							if (selected_topics.indexOf(topic) > -1) {
-								topic_box += "\t<div class='list-topic-selected' onclick='selectTopic(\"" + topic + "\", " + index + ")'>" + topic + "</div>"
-							} else {
-								topic_box += "\t<div class='list-topic-unselect' onclick='selectTopic(\"" + topic + "\", " + index + ")'>" + topic + "</div>"
-							}
-						})
+					// topic name
+					topic_box += "\t<h3 class='topic-index'>" + (list_index > 0 ? "Sub topic #" + list_index : "Topic") + ":</h3>"
 
-						topic_box += "\t</div>"
-					} else {
-						topic_box += "<div class='topic-emptylist' style='display: "
-						topic_box += show ? "flex;'>" : "none;'>"
-						topic_box += "\t<h3 id='no-results'>No Topic(s)</h3>"
+					// topic toggle list
+					topic_box += "\t<h3 class='topic-header"
+					topic_box += list_index == topics_list.length - 1 ? "" : "-disabled"
+					topic_box += "'"
+
+					if (list_index == topics_list.length - 1) {
+						topic_box += " onclick='toggleTopicList(" + list_index + ")'"
 					}
 
-					topic_box += "\t<div id='add-topic' onclick='showAddBox(true, " + index + ")'>Add A Topic</div>"
+					topic_box += ">"
+					topic_box += "\t\t<div>"
+					topic_box += topic ? topic : "Select " + (list_index > 0 ? "Sub topic #" + list_index : "Topic")
+					topic_box += "\t\t</div>"
+					topic_box += "\t\t<i class='fas fa-arrows-alt-v topic-toggle'></i>"
+					topic_box += "\t</h3>"
 					topic_box += "</div>"
-					topic_box += "<div class='push-topic' onclick='pushOption(" + index + ")'>Add Subtopic</div>"
+
+					// topics list
+					topic_box += "<div class='topic-list-holder' style='display: "
+					topic_box += show ? "block;'>" : "none;'>"
+					topic_box += "<div class='topic-list'>"
+
+					infos.topics.forEach(function (list, topic_index) {
+						if (
+							(list.length == 1 && list_index == 0) 
+							|| 
+							(
+								selected_topics[selected_topics.length - 2] == list[selected_topics.length - 2] &&
+								selected_topics[selected_topics.length - 2] != undefined && list[selected_topics.length - 2] != undefined &&
+								list[list_index] != undefined
+							)
+							&& displayed_topics.indexOf(list[list_index]) == -1
+						) {
+							list_topic = list[list_index]
+
+							if (selected_topics.indexOf(list_topic) > -1) {
+								topic_box += "<div class='list-topic-selected' onclick='selectTopic(\"" + list_topic + "\", " + list_index + ")'>" + list_topic + "</div>"
+							} else {
+								topic_box += "\t<div class='list-topic-unselect' onclick='selectTopic(\"" + list_topic + "\", " + list_index + ")'>" + list_topic + "</div>"
+							}
+
+							displayed_topics.push(list_topic)
+						}
+					})
+
+					// if empty
+					/*
+					topic_box += "<div class='topic-emptylist' style='display: "
+						topic_box += show ? "flex;'>" : "none;'>"
+						topic_box += "\t<h3 id='no-results'>No Topic(s)</h3>"
+						topic_box += "\t<div id='add-topic' onclick='showAddBox(true, " + index + ")'>Add A Topic</div>"
+					*/
+
+					topic_box += "</div>"
+					topic_box += "<div id='add-topic' onclick='showAddBox(true, " + list_index + ")'>Add A Topic</div>"
+					topic_box += "</div>"
+
+					// add sub topic
+					topic_box += "<div class='push-topic' onclick='pushOption(" + list_index + ")'>Add Subtopic</div>"
 				})
 
-				if (topics.length == 0) {
+				if (topics_list.length == 0) {
 					topic_box += "<div id='add-topic' onclick='addFirstTopic()'>Add A Topic</div>"
 				}
 
 				topics_box.innerHTML = topic_box
 				errormsg.innerHTML = ""
-			}
-
-			async function getAllTopics() {
-				var file = await fs.readFileSync(note_file)
-				var infos = JSON.parse(file)
-				var topics = infos.topics
-				var each_topics, valid_append
-
-				all_topics = []
-
-				topics.forEach(function (topic) {
-					each_topics = JSON.parse(topic)
-
-					each_topics.forEach(function (each_topic) {
-						valid_append = true
-
-						all_topics.forEach(function (topic) {
-							if (topic == each_topic) {
-								valid_append = false
-							}
-						})
-
-						if (valid_append) {
-							all_topics.push(each_topic)
-						}
-					})
-				})
 			}
 
 			/* topic controls */
@@ -150,136 +165,114 @@
 			}
 
 			function addFirstTopic() {
-				topics.push({ topic: '', show: false })
+				topics_list.push({ topic: '', show: false })
 				selected_topics.push('')
 
-				displayTopics()
+				displayTopics(null)
 			}
 
 			function addTopic() {
-				topics[topic_index].topic = new_topic.value
-				topics[topic_index].show = false
+				topics_list[topic_index].topic = new_topic.value
+				topics_list[topic_index].show = false
 				selected_topics[topic_index] = new_topic.value
 				hidden_box.style.display = "none"
 				add_box.style.display = "none"
 
-				displayTopics()
+				displayTopics(null)
 				getNote()
 			}
 
 			function removeTopic(index) {
-				topics.splice(index, 1)
+				topics_list.splice(index, 1)
 				selected_topics.splice(index, 1)
 
-				displayTopics()
+				displayTopics(null)
 				getNote()
 			}
 
 			function toggleTopicList(index) {
-				var topic = topics[index]
+				var topic = topics_list[index]
 
 				topic.show = !topic.show
 
-				topics[index] = topic
+				topics_list[index] = topic
 
-				displayTopics()
+				displayTopics(index)
 			}
 
 			function pushOption(index) {
-				topics.splice(index + 1, 0, { topic: "", show: false })
+				topics_list.splice(index + 1, 0, { topic: "", show: false })
+				selected_topics.splice(index + 1, 0, '')
 
-				displayTopics()
+				displayTopics(null)
 			}
 
 			async function getNote() {
 				var file = await fs.readFileSync(note_file)
 				var infos = JSON.parse(file)
-				var note = "", topics = JSON.stringify(selected_topics)
+				var note = "", same
+				var k, m
 
-				infos.topics.forEach(function (topic, index) {
-					if (topic == topics) {
+				info.value = ""
+				infos.topics.forEach(function (topics, index) {
+					if (topics.toString() == selected_topics.toString()) {
 						note = infos.notes[index]
+
+						while (note.replace("\"\"", "") != note) {
+							note = note.replace("\"\"", "'")
+						}
+
+						info.value = note
+
+						delete_button.style.display = note ? "block" : "none"
+
+						return
 					}
 				})
-
-				info.value = note
-
-				while (info.value.replace("\"\"", "") != info.value) {
-					info.value = info.value.replace("\"\"", "'")
-				}
-
-				delete_button.style.display = response ? "block" : "none"
 			}
 			/* end topic controls */
 
 			/* topic input */
 			function selectTopic(topic, index) {
-				topics[index].topic = topic
-				topics[index].show = false;
+				topics_list[index].topic = topic
+				topics_list[index].show = false;
 				selected_topics[index] = topic
 
-				displayTopics()
+				displayTopics(null)
 				getNote()
 			}
 			/* end topic input */
 
 			async function saveInfo() {
-				var blank = false
-				var inputValue = document.getElementById("info").value
-				var info = { topics: [], note: "" }
+				errormsg.innerHTML = ""
 
-				topics.forEach(function ({ topic }, index) {
-					if (!topic) {
-						if (index < topics.length - 1) {
-							blank = true
+				var file = await fs.readFileSync(note_file)
+				var infos = JSON.parse(file)
+				var value = document.getElementById("info").value
+				var valueexist = false
 
-							errormsg.innerHTML = "Blank Detected"
-						}
-					}
-				})
-
-				if (!inputValue) {
+				if (!value) {
 					errormsg.innerHTML = "Write something"
-				}
-
-				if (!blank && inputValue) {
-					errormsg.innerHTML = ""
-
-					all_topics = all_topics.concat(selected_topics)
-					info.topics = JSON.stringify(selected_topics)
-					info.note = inputValue
-					new_topic.value = ""
-
-					while (info.note.replace("'", "") != info.note) {
-						info.note = info.note.replace("'", "\"\"")
+				} else {
+					while (value.replace("'", "") != value) {
+						value = value.replace("'", "\"\"")
 					}
 
-					var file = await fs.readFileSync(note_file)
-					var infos = JSON.parse(file)
+					infos.topics.forEach(function (topics, index) {
+						if (topics.toString() == selected_topics.toString()) {
+							infos.notes[index] = value
+							valueexist = true
 
-					// get new note from form
-					var note_info = info
-
-					topics = note_info.topics
-					var note = note_info.note
-					var topic_index = 0
-
-					infos.topics.forEach(function (topic, index) {
-						if (topic == topics) {
-							topic_index = index + 1
+							return
 						}
 					})
 
-					if (topic_index > 0) {
-						infos.notes[topic_index - 1] = note
-					} else {
-						infos.topics.push(topics)
-						infos.notes.push(note)
+					if (!valueexist) {
+						infos.topics.push(selected_topics)
+						infos.notes.push(value)
 					}
 
-					infos = JSON.stringify(infos)
-
-					await fs.writeFileSync(note_file, infos)
+					await fs.writeFileSync(note_file, JSON.stringify(infos))
 
 					delete_button.style.display = "block"
 
@@ -299,34 +292,27 @@
 
 				var file = await fs.readFileSync(note_file)
 				var infos = JSON.parse(file)
-				var topic_index = 0
 
-				// get note from form for deletion
-				var topics = JSON.stringify(selected_topics)
+				infos.topics.forEach(function (topics, index) {
+					if (topics.toString() == selected_topics.toString()) {
+						infos.topics.splice(index, 1)
+						infos.notes.splice(index, 1)
 
-				infos.topics.forEach(function (topic, index) {
-					if (topic == topics) {
-						topic_index = index
+						fs.writeFileSync(note_file, JSON.stringify(infos), function (err) {})
+
+						delete_button.style.display = "none"
+
+						setTimeout(function () {
+							hidden_box.style.display = "none"
+							delete_confirm_box.style.display = "none"
+						}, 1000)
+
+						return
 					}
-				})
-
-				infos.topics.splice(topic_index, 1)
-				infos.notes.splice(topic_index, 1)
-
-				infos = JSON.stringify(infos)
-
-				await fs.writeFileSync(note_file, infos)
-
-				delete_button.style.display = "none"
-
-				setTimeout(function () {
-					hidden_box.style.display = "none"
-					delete_confirm_box.style.display = "none"
-				}, 1000)
+				})	
 			}
 
-			displayTopics()
-			getAllTopics()
+			displayTopics(null)
 		</script>
 	</body>
 </html>
